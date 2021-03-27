@@ -1,4 +1,5 @@
 import rpi_ws281x as rpiws
+from dualstrips import DualStrips 
 import argparse
 import time
 
@@ -20,18 +21,28 @@ LED_2_INVERT     = False   # True to invert the signal (when using NPN transisto
 LED_2_CHANNEL    = 1       # 0 or 1
 LED_2_STRIP      = rpiws.ws.WS2811_STRIP_RGB
 
-def setColor(strips, color):
-	for strip in strips:
-		for i in range(strip.numPixels()):
+def setColor(strip, color):
+	for i in range(strip.numPixels()):
 			strip.setPixelColor(i, color)
-	for strip in strips:
-		strip.show()
+	strip.show()
+
+#def setColor(strips, color):
+#	for strip in strips:
+#		for i in range(strip.numPixels()):
+#			strip.setPixelColor(i, color)
+#	for strip in strips:
+#		strip.show()
 
 def wipeOut(strips):
-	for strip in strips:
-		for i in range(strip.numPixels()):
-			strip.setPixelColor(i, rpiws.Color(0, 0, 0))
-			strip.show()
+	for i in range(strip.numPixels()):
+		strip.setPixelColor(i, rpiws.Color(0, 0, 0))
+		strip.show()
+
+#def wipeOut(strips):
+#	for strip in strips:
+#		for i in range(strip.numPixels()):
+#			strip.setPixelColor(i, rpiws.Color(0, 0, 0))
+#			strip.show()
 
 
 if __name__ == '__main__':
@@ -41,31 +52,24 @@ if __name__ == '__main__':
 	parser.add_argument('-s', '--side', action='store_true', help='turn on side light')
 	args = parser.parse_args()
 
-	stripFront = rpiws.Adafruit_NeoPixel(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL)
-	stripSide = rpiws.Adafruit_NeoPixel(LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL)
-
-	stripFront.begin()
-	stripSide.begin()
+	if (not args.front and not args.side) or (args.front and args.side):
+		strip = DualStrips(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL, LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL)
+	elif args.front:
+		strip = rpiws.Adafruit_NeoPixel(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL)
+	else:
+		strip = rpiws.Adafruit_NeoPixel(LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL)
+	strip.begin()
 
 	try:
-		strips = []
-		if not args.front and not args.side:
-			strips = [stripFront, stripSide]
-		if args.front:
-			strips.append(stripFront)
-		if args.side:
-			strips.append(stripSide)
-
-		setColor(strips, rpiws.Color(0, 0, 0))
+		setColor(strip, rpiws.Color(0, 0, 0))
 		for i in range(100):
-			setColor(strips, rpiws.Color(255 * i // 100, 120 * i // 100, 90 * i // 100))
+			setColor(strip, rpiws.Color(255 * i // 100, 120 * i // 100, 90 * i // 100))
 			time.sleep(0.03)
 
 		while True:
 			time.sleep(1)
 
-
 	except KeyboardInterrupt:
 		if args.clear:
-			wipeOut(strips)
+			wipeOut(strip)
 			

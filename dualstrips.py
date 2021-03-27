@@ -1,50 +1,65 @@
 import rpi_ws281x as rpiws
 import time
+from datetime import datetime
 
 class DualStrips:
 	def __init__(self, led_1_count, led_1_pin, led_1_freq_hz, led_1_dma, led_1_invert, led_1_brightness, led_1_channel, led_2_count, led_2_pin, led_2_freq_hz, led_2_dma, led_2_invert, led_2_brightness, led_2_channel, reverse_idx=False):
 		self.__strip1 = rpiws.Adafruit_NeoPixel(led_1_count, led_1_pin, led_1_freq_hz, led_1_dma, led_1_invert, led_1_brightness, led_1_channel)
 		self.__strip2 = rpiws.Adafruit_NeoPixel(led_2_count, led_2_pin, led_2_freq_hz, led_2_dma, led_2_invert, led_2_brightness, led_2_channel)
-		self.__led_1_count = led_1_count
-		self.__led_2_count = led_2_count
-		self.__reverse_idx = reverse_idx
+		self.__led1Count = led_1_count
+		self.__led2Count = led_2_count
+		self.__reverseIdx = reverse_idx
+		self.__lastShowTime = datetime.utcnow()
+		self.__isStrip1Modified = False
+		self.__isStrip2Modified = False
 
 	def begin(self):
 		self.__strip1.begin()
 		self.__strip2.begin()
 
 	def show(self):
-		self.__strip1.show()
-		self.__strip2.show()
-		time.sleep(0.006)  # to prevent end-of-transmission missing
+		if self.__isStrip1Modified:
+			self.__strip1.show()
+			self.__isStrip1Modified = False
+		if self.__isStrip2Modified:
+			self.__strip2.show()
+			self.__isStrip2Modified = False
 
 	def setPixelColor(self, n, color):
-		if n > self.__led_1_count + self.__led_2_count:
-			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led_1_count, self.__led_2_count))
-		if self.__reverse_idx:
-			if n >= self.__led_2_count:
-				self.__strip1.setPixelColor(self.__led_1_count + self.__led_2_count - n, color)
+		if n > self.__led1Count + self.__led2Count:
+			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led1Count, self.__led2Count))
+		if self.__reverseIdx:
+			if n >= self.__led2Count:
+				self.__strip1.setPixelColor(self.__led1Count + self.__led2Count - n, color)
+				self.__isStrip1Modified = True
 			else:
-				self.__strip2.setPixelColor(self.__led_2_count - n, color)
+				self.__strip2.setPixelColor(self.__led2Count - n, color)
+				self.__isStrip2Modified = True
 		else:
-			if n > self.__led_1_count:
-				self.__strip2.setPixelColor(n - self.__led_1_count, color)
+			if n > self.__led1Count:
+				self.__strip2.setPixelColor(n - self.__led1Count, color)
+				self.__isStrip2Modified = True
 			else:
 				self.__strip1.setPixelColor(n, color)
+				self.__isStrip1Modified = True
 
 	def setPixelColorRGB(self, n, red, green, blue, white = 0):
-		if n > self.__led_1_count + self.__led_2_count:
-			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led_1_count, self.__led_2_count))
-		if self.__reverse_idx:
-			if n > self.__led_2_count:
-				self.__strip1.setPixelColor(self.__led_1_count + self.__led_2_count - n, rpiws.Color(red, green, blue, white))
+		if n > self.__led1Count + self.__led2Count:
+			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led1Count, self.__led2Count))
+		if self.__reverseIdx:
+			if n >= self.__led2Count:
+				self.__strip1.setPixelColor(self.__led1Count + self.__led2Count - n, rpiws.Color(red, green, blue, white))
+				self.__isStrip1Modified = True
 			else:
-				self.__strip2.setPixelColor(self.__led_2_count - n, rpiws.Color(red, green, blue, white))
+				self.__strip2.setPixelColor(self.__led2Count - n, rpiws.Color(red, green, blue, white))
+				self.__isStrip2Modified = True
 		else:
-			if n > self.__led_1_count:
-				self.__strip2.setPixelColor(n - self.__led_1_count, rpiws.Color(red, green, blue, white))
+			if n > self.__led1Count:
+				self.__strip2.setPixelColor(n - self.__led1Count, rpiws.Color(red, green, blue, white))
+				self.__isStrip2Modified = True
 			else:
 				self.__strip1.setPixelColor(n, rpiws.Color(red, green, blue, white))
+				self.__isStrip1Modified = True
 
 	def setBrightness(self, brightness):
 		raise NotImplementedError
@@ -56,7 +71,7 @@ class DualStrips:
 		pixelData = []
 		pixelData.extend(self.__strip1.getPixels())
 		pixelData.extend(self.__strip2.getPixels())
-		if self.__reverse_idx:
+		if self.__reverseIdx:
 			return pixelData.reverse()
 		else:
 			return pixelData
@@ -65,21 +80,21 @@ class DualStrips:
 		return self.__strip1.numPixels() + self.__strip2.numPixels()
 
 	def getPixelColor(self, n):
-		if n > self.__led_1_count + self.__led_2_count:
-			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led_1_count, self.__led_2_count))
-		if self.__reverse_idx:
-			if n > self.__led_2_count:
-				self.__strip1.getPixelColor(self.__led_1_count + self.__led_2_count - n)
+		if n > self.__led1Count + self.__led2Count:
+			raise RuntimeError('led position out of index (the led counts are %d and %d)' % (self.__led1Count, self.__led2Count))
+		if self.__reverseIdx:
+			if n > self.__led2Count:
+				self.__strip1.getPixelColor(self.__led1Count + self.__led2Count - n)
 			else:
-				self.__strip2.getPixelColor(self.__led_2_count - n)
+				self.__strip2.getPixelColor(self.__led2Count - n)
 		else:
-			if n > self.__led_1_count:
-				self.__strip2.getPixelColor(n - self.__led_1_count)
+			if n > self.__led1Count:
+				self.__strip2.getPixelColor(n - self.__led1Count)
 			else:
 				self.__strip1.getPixelColor(n)
 
 	def setReverseIdx(self, isReverse):
-		self.__reverse_idx = isReverse
+		self.__reverseIdx = isReverse
 
 if __name__ == '__main__':
 	print('dualstrips API debug test')
@@ -115,7 +130,7 @@ if __name__ == '__main__':
 		for i in range(strip.numPixels()):
 			strip.setPixelColor(i, rpiws.Color(255, 0, 0))
 			strip.show()
-			time.sleep(0.006)
+			time.sleep(0.01)
 
 		strip.setReverseIdx(True)
 		time.sleep(1)
@@ -123,7 +138,7 @@ if __name__ == '__main__':
 		for i in range(strip.numPixels()):
 			strip.setPixelColor(i, rpiws.Color(0, 255, 0))
 			strip.show()
-			time.sleep(0.006)
+			time.sleep(0.01)
 
 		strip.setReverseIdx(False)
 		time.sleep(1)
