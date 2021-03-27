@@ -46,71 +46,12 @@ def runServer(host, port, spHandler):
 		connection.sendall(HTTPResponseContent.encode('utf-8'))
 		connection.close()
 
-#		if requestMethod == 'GET':
-#			if requestRoute == '/test':
-#				content = response_hdr + 'test\n'
-#			elif requestRoute == '/off':
-#				content = response_hdr + off(spHandler)
-#			elif requestRoute == '/white':
-#				content = response_hdr + white(spHandler)
-#			elif requestRoute == '/clock':
-#				content = response_hdr + clock(spHandler)
-#			elif requestRoute == '/rainbow':
-#				content = response_hdr + rainbow(spHandler)
-#			else:
-#				continue
-#		else:
-#			continue
-#		connection.sendall(content.encode('utf-8'))
-#		connection.close()
-
-
 
 def makeResponseBody(command, result):
 	if result:
 		return json.dumps({'status': command, 'result': 0})
 	else:
 		return json.dumps({'status': command, 'result': 1})
-
-#def off(spHandler):
-#	try:
-#		spHandler.terminateProcess()
-#		return response('off', True)
-#	except Exception as e:
-#		print(e)
-#		return response('off', False)
-
-#def white(spHandler):
-#	try:
-#		spHandler.createProcess('white')
-#		return reponse('white', True)
-#	except Exception as e:
-#		print(e)
-#		return response('white', False)
-
-#def clock(spHandler):
-#	try:
-#		spHandler.createProcess('clock')
-#		return response('clock', True)
-#	except Exception as e:
-#		print(e)
-#		return response('clock', False)
-#
-#def rainbow(spHandler):
-#	try:
-#		spHandler.createProcess('rainbow')
-#		return response('rainbow', True)
-#	except Exception as e:
-#		print(e)
-#		return response('rainbow', False)
-
-#def rainbow2(spHandler):
-#	try:
-#		spHandler.createProcess('rainbow2')
-#		return response('rainbow2', True)
-#	except Exception as e:
-#		print(e)
-#		return response('rainbow2', False)
 
 if __name__ == '__main__':
 	if len(sys.argv) == 2 and int(sys.argv[1]) > 1024 and int(sys.argv[1]) < 65536:

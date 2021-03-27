@@ -16,9 +16,6 @@ class SubProcessHandler:
 			print(e)
 			self.__actionResult = False
 
-#	def __del__(self):
-#		self.terminateProcess()
-
 	def createProcess(self, mode):
 		if mode in self.__modes.keys():
 			try:
