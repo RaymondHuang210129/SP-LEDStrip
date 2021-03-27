@@ -1,3 +1,6 @@
+# Author: Raymond Huang (raymond210129.cs05@g2.nctu.edu.com)
+# Credit: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
+
 import rpi_ws281x as rpiws
 from dualstrips import DualStrips 
 import argparse
