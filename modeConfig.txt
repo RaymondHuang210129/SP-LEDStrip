@@ -1,4 +1,4 @@
-white python3 /home/pi/rpi_ws281x/python/examples/ray.py -w -c
-clock python3 /home/pi/rpi_ws281x/python/examples/ray.py --clock -c
-rainbow python3 /home/pi/rpi_ws281x/python/examples/strandtest.py -c
-rainbow2 python3 /home/pi/rpi_ws281x/python/examples/multistrandtest.py -c
+white python3 ./white.py -c
+clock python3 ./ray.py --clock -c
+rainbow python3 ./strandtest.py -c
+rainbow2 python3 ./multistrandtest.py -c

@@ -19,32 +19,35 @@ def runServer(host, port, spHandler):
 	sock.listen(100)
 
 	while True:
-		connection, address = sock.accept()
-		requestData = connection.recv(1024).decode('utf-8')
-		requestMethod = requestData.split(' ')[0]
-		requestRoute = requestData.split(' ')[1]
-		print("request data:", requestData)
+		try:
+			connection, address = sock.accept()
+			requestData = connection.recv(1024).decode('utf-8')
+			requestMethod = requestData.split(' ')[0]
+			requestRoute = requestData.split(' ')[1]
+			print("request data:", requestData)
 
-		if requestMethod == 'GET':
-			if requestRoute	 == '/favicon.ico':
-				continue
-			elif requestRoute == '/off':
-				handlerResult = spHandler.terminateProcess()
-				if spHandler.isActionSuccess():
-					HTTPResponseContent = HTTPResponseSuccessHdr + makeResponseBody('off', True)
+			if requestMethod == 'GET':
+				if requestRoute	 == '/favicon.ico':
+					continue
+				elif requestRoute == '/off':
+					handlerResult = spHandler.terminateProcess()
+					if spHandler.isActionSuccess():
+						HTTPResponseContent = HTTPResponseSuccessHdr + makeResponseBody('off', True)
+					else:
+						HTTPResponseContent = HTTPResponseFailedHdr + makeResponseBody('off', False)
 				else:
-					HTTPResponseContent = HTTPResponseFailedHdr + makeResponseBody('off', False)
+					spHandler.createProcess(requestRoute[1:])
+					if spHandler.isActionSuccess():
+						HTTPResponseContent = HTTPResponseSuccessHdr + makeResponseBody(requestRoute[1:], True)
+					else:
+						HTTPResponseContent = HTTPResponseFailedHdr + makeResponseBody(requestRoute[1:], False)
 			else:
-				spHandler.createProcess(requestRoute[1:])
-				if spHandler.isActionSuccess():
-					HTTPResponseContent = HTTPResponseSuccessHdr + makeResponseBody(requestRoute[1:], True)
-				else:
-					HTTPResponseContent = HTTPResponseFailedHdr + makeResponseBody(requestRoute[1:], False)
-		else:
-			HTTPResponseContent = HTTPResponseFailedHdr
-		print("send data:", HTTPResponseContent)
-		connection.sendall(HTTPResponseContent.encode('utf-8'))
-		connection.close()
+				HTTPResponseContent = HTTPResponseFailedHdr
+			print("send data:", HTTPResponseContent)
+			connection.sendall(HTTPResponseContent.encode('utf-8'))
+			connection.close()
+		except Exception as e:
+			print(e)
 
 
 def makeResponseBody(command, result):
