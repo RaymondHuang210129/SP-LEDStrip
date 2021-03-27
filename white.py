@@ -26,24 +26,10 @@ def setColor(strip, color):
 			strip.setPixelColor(i, color)
 	strip.show()
 
-#def setColor(strips, color):
-#	for strip in strips:
-#		for i in range(strip.numPixels()):
-#			strip.setPixelColor(i, color)
-#	for strip in strips:
-#		strip.show()
-
 def wipeOut(strips):
 	for i in range(strip.numPixels()):
 		strip.setPixelColor(i, rpiws.Color(0, 0, 0))
 		strip.show()
-
-#def wipeOut(strips):
-#	for strip in strips:
-#		for i in range(strip.numPixels()):
-#			strip.setPixelColor(i, rpiws.Color(0, 0, 0))
-#			strip.show()
-
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
