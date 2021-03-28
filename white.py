@@ -2,7 +2,8 @@
 # Credit: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
 
 import rpi_ws281x as rpiws
-from dualstrips import DualStrips 
+from dualstrips import DualStrips
+from gammaColor import GammaColor 
 import argparse
 import time
 
@@ -39,6 +40,7 @@ if __name__ == '__main__':
 	parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
 	parser.add_argument('-f', '--front', action='store_true', help='turn on front light')
 	parser.add_argument('-s', '--side', action='store_true', help='turn on side light')
+	parser.add_argument('-g', '--gamma', action='store_true', help='apply gamma correction')
 	args = parser.parse_args()
 
 	if (not args.front and not args.side) or (args.front and args.side):
@@ -51,10 +53,16 @@ if __name__ == '__main__':
 
 	try:
 		setColor(strip, rpiws.Color(0, 0, 0))
-		for i in range(100):
-			setColor(strip, rpiws.Color(255 * i // 100, 120 * i // 100, 90 * i // 100))
-			time.sleep(0.03)
+		if args.gamma:
+			for i in range(100):
+				setColor(strip, GammaColor.Color(255 * i // 100, 255 * i // 100, 255 * i // 100))
+				time.sleep(0.03)
+		else:
+			for i in range(100):
+				setColor(strip, rpiws.Color(255 * i // 100, 120 * i // 100, 90 * i // 100))
+				time.sleep(0.03)
 
+		print('max brightness')
 		while True:
 			time.sleep(1)
 

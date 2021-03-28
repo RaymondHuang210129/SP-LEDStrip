@@ -1,4 +1,4 @@
 white python3 ./white.py -c
 clock python3 ./ray.py --clock -c
-rainbow python3 ./strandtest.py -c
+rainbow python3 ./rainbow.py -c -r -u
 rainbow2 python3 ./multistrandtest.py -c
