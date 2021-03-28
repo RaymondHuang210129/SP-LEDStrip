@@ -1,8 +1,8 @@
 # Author: Raymond Huang (raymond210129.cs05@g2.nctu.edu.com)
 # Reference & Credit: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
-
 import rpi_ws281x as rpiws
-from dualstrips import DualStrips 
+from dualstrips import DualStrips
+from colorProfile import OriginColor, GammaColor
 import argparse
 import time
 
@@ -31,18 +31,18 @@ def setColor(strip, color):
 
 def wipeOut(strips):
 	for i in range(strip.numPixels()):
-		strip.setPixelColor(i, rpiws.Color(0, 0, 0))
+		strip.setPixelColor(i, colorMaker.make(0, 0, 0))
 		strip.show()
 
 def wheel(pos):
     if pos < 85:
-        return rpiws.Color(pos * 3, 255 - pos * 3, 0)
+        return colorMaker.make(pos * 3, 255 - pos * 3, 0)
     elif pos < 170:
         pos -= 85
-        return rpiws.Color(255 - pos * 3, 0, pos * 3)
+        return colorMaker.make(255 - pos * 3, 0, pos * 3)
     else:
         pos -= 170
-        return rpiws.Color(0, pos * 3, 255 - pos * 3)
+        return colorMaker.make(0, pos * 3, 255 - pos * 3)
 
 def rainbowCycle(strip, wait_ms=20, iterations=5):
     for j in range(256*iterations):
@@ -65,6 +65,7 @@ if __name__ == '__main__':
 	parser.add_argument('-s', '--side', action='store_true', help='turn on side light')
 	parser.add_argument('-u', '--uniform', action='store_true', help='Draw rainbow that uniformly distributes itself across all pixels')
 	parser.add_argument('-r', '--reverse', action='store_true', help='change the direction of color animation')
+	parser.add_argument('-g', '--gamma', action='store_true', help='apply gamma correction')
 	args = parser.parse_args()
 
 	if (not args.front and not args.side) or (args.front and args.side):
@@ -75,8 +76,13 @@ if __name__ == '__main__':
 		strip = rpiws.Adafruit_NeoPixel(LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL)
 	strip.begin()
 
+	if args.gamma:
+		colorMaker = GammaColor()
+	else:
+		colorMaker = OriginColor()
+
 	try:
-		setColor(strip, rpiws.Color(0, 0, 0))
+		setColor(strip, colorMaker.make(0, 0, 0))
 		if args.uniform:
 			while True:
 				rainbowCycle(strip)

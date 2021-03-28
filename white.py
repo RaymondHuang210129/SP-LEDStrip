@@ -1,9 +1,8 @@
 # Author: Raymond Huang (raymond210129.cs05@g2.nctu.edu.com)
 # Credit: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
-
 import rpi_ws281x as rpiws
 from dualstrips import DualStrips
-from gammaColor import GammaColor 
+from colorProfile import GammaColor, OriginColor
 import argparse
 import time
 
@@ -32,7 +31,7 @@ def setColor(strip, color):
 
 def wipeOut(strips):
 	for i in range(strip.numPixels()):
-		strip.setPixelColor(i, rpiws.Color(0, 0, 0))
+		strip.setPixelColor(i, colorMaker.make(0, 0, 0))
 		strip.show()
 
 if __name__ == '__main__':
@@ -51,15 +50,20 @@ if __name__ == '__main__':
 		strip = rpiws.Adafruit_NeoPixel(LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL)
 	strip.begin()
 
+	if args.gamma:
+		colorMaker = GammaColor()
+	else:
+		colorMaker = OriginColor()
+
 	try:
-		setColor(strip, rpiws.Color(0, 0, 0))
+		setColor(strip, colorMaker.make(0, 0, 0))
 		if args.gamma:
 			for i in range(100):
-				setColor(strip, GammaColor.Color(255 * i // 100, 255 * i // 100, 255 * i // 100))
+				setColor(strip, colorMaker.make(255 * i // 100, 255 * i // 100, 255 * i // 100))
 				time.sleep(0.03)
 		else:
 			for i in range(100):
-				setColor(strip, rpiws.Color(255 * i // 100, 120 * i // 100, 90 * i // 100))
+				setColor(strip, colorMaker.make(255 * i // 100, 120 * i // 100, 90 * i // 100))
 				time.sleep(0.03)
 
 		print('max brightness')
