@@ -2,6 +2,8 @@ import json
 from subProcessHandler import SubProcessHandler
 import socket
 import sys
+import pathlib
+import os
 
 HTTPResponseSuccessHdr = '''
 HTTP/1.x 200 ok
@@ -57,6 +59,8 @@ def makeResponseBody(command, result):
 		return json.dumps({'status': command, 'result': 1})
 
 if __name__ == '__main__':
+	filePath = pathlib.Path(__file__).parent.absolute()
+	os.chdir(filePath)
 	if len(sys.argv) == 2 and int(sys.argv[1]) > 1024 and int(sys.argv[1]) < 65536:
 		port = int(sys.argv[1])
 		spHandler = SubProcessHandler()
