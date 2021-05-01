@@ -17,17 +17,20 @@ class SubProcessHandler:
 			self.__actionResult = False
 
 	def createProcess(self, mode):
-		if mode in self.__modes.keys():
-			try:
-				if not self.__isTerminated():
-					self.__subp.terminate()
-					self.__subp.wait()
-				self.__subp = sp.Popen(self.__modes[mode])
-				self.__actionResult = True
-			except Exception as e:
-				print(e)
-				self.__actionResult = False
-		else:
+
+		try:
+			self.__modes = dict()
+			with open('modeConfig.txt', 'r') as configFile:
+				configs = configFile.readlines()
+				for config in configs:
+					self.__modes.update({config.split()[0]: config.split()[1:]})
+			if not self.__isTerminated():
+				self.__subp.terminate()
+				self.__subp.wait()
+			self.__subp = sp.Popen(self.__modes[mode])
+			self.__actionResult = True
+		except Exception as e:
+			print(e)
 			self.__actionResult = False
 		
 
