@@ -31,6 +31,7 @@ def setColor(strip, color):
 
 def wipeOut(strips):
 	for i in range(strip.numPixels()):
+		time.sleep(0.007)
 		strip.setPixelColor(i, colorMaker.make(0, 0, 0))
 		strip.show()
 
