@@ -25,6 +25,8 @@ LED_2_INVERT     = False   # True to invert the signal (when using NPN transisto
 LED_2_CHANNEL    = 1       # 0 or 1
 LED_2_STRIP      = rpiws.ws.WS2811_STRIP_RGB
 
+mySocket = None
+
 
 def wipeOut(strips):
 	for i in range(strip.numPixels()):
@@ -33,34 +35,55 @@ def wipeOut(strips):
 		strip.show()
 
 def setColor(strip, color):
+	time.sleep(0.006)
 	for i in range(strip.numPixels()):
 			strip.setPixelColor(i, color)
 	strip.show()
 
-def listenColor(port):
+def setColorForEachBulb(strip, colors, length):
+	time.sleep(0.006)
+	for i in range(LED_1_COUNT + LED_2_COUNT):
+		redVal = int.from_bytes(colors[i * 3:i * 3 + 1], "big")
+		greenVal = int.from_bytes(colors[i * 3 + 1:i * 3 + 2], "big")
+		blueVal = int.from_bytes(colors[i * 3 + 2:i * 3 + 3], "big")
+		strip.setPixelColor(i, colorMaker.make(redVal, greenVal, blueVal))
+	strip.show()
+
+def listenColor(port, strip):
+	global mySocket
 	try:
-		mySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		addressAndPort = ('0.0.0.0', port)
-		mySocket.bind(addressAndPort)
+		
 		while True:
+			mySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			addressAndPort = ('0.0.0.0', port)
+			mySocket.bind(addressAndPort)
 			data, clientAddr = mySocket.recvfrom(4096)
-			print(data.encode('utf-8'))
+			if len(data) == 7:
+				hexColor = data.decode('utf-8').lstrip('#')
+				red = int(hexColor[0:2], 16)
+				green = int(hexColor[2:4], 16)
+				blue = int(hexColor[4:6], 16)
+				setColor(strip, colorMaker.make(red, green, blue))
+			elif len(data) == (LED_1_COUNT + LED_2_COUNT) * 3:
+				setColorForEachBulb(strip, data, LED_1_COUNT + LED_2_COUNT)
+			mySocket.close()
 
 	except Exception as e:
 		print(e)
+		mySocket.close()
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
+	parser.add_argument("port", type=int, help='port to listen')
 	parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
 	parser.add_argument('-f', '--front', action='store_true', help='turn on front light')
 	parser.add_argument('-s', '--side', action='store_true', help='turn on side light')
 	parser.add_argument('-g', '--gamma', action='store_true', help='apply gamma correction')
-	parser.add_argument('port', type=int, choices=range(1024, 65536), help='port to listen')
 	args = parser.parse_args()
 
 	if (not args.front and not args.side) or (args.front and args.side):
-		strip = DualStrips(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL, LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL, reverse_idx=args.reverse)
+		strip = DualStrips(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL, LED_2_COUNT, LED_2_PIN, LED_2_FREQ_HZ, LED_2_DMA, LED_2_INVERT, LED_2_BRIGHTNESS, LED_2_CHANNEL, False)
 	elif args.front:
 		strip = rpiws.Adafruit_NeoPixel(LED_1_COUNT, LED_1_PIN, LED_1_FREQ_HZ, LED_1_DMA, LED_1_INVERT, LED_1_BRIGHTNESS, LED_1_CHANNEL)
 	else:
@@ -73,9 +96,11 @@ if __name__ == '__main__':
 		colorMaker = OriginColor()
 
 	try:
-		listenColor(port)
+		listenColor(args.port, strip)
 
 	except KeyboardInterrupt:
 		if args.clear:
 			strip.setReverseIdx(False)
+			mySocket.close()
 			wipeOut(strip)
+			
