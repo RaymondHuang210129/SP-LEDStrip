@@ -26,6 +26,8 @@ class MainActivity : AppCompatActivity() {
     private var rainbowModeButton: Button? = null
     private var manualModeButton: Button? = null
     private var whiteModeButton: Button? = null
+    private var IonOnButton: Button? = null
+    private var IonOffButton: Button? = null
 
     private val localPort: Int = 20080
 
@@ -137,6 +139,33 @@ class MainActivity : AppCompatActivity() {
             }.start()
         }
 
+        IonOnButton?.setOnClickListener {
+            Thread {
+                try {
+                    var url = URL("http://" + serverIPAddress?.getText().toString() + ":8671/on")
+                    with (url.openConnection() as HttpURLConnection) {
+                        requestMethod = "GET"
+                        Log.d("Button", "Sent 'GET' request to URL : $url; Response Code : $responseCode")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }.start()
+        }
+
+        IonOffButton?.setOnClickListener {
+            Thread {
+                try {
+                    var url = URL("http://" + serverIPAddress?.getText().toString() + ":8671/off")
+                    with (url.openConnection() as HttpURLConnection) {
+                        requestMethod = "GET"
+                        Log.d("Button", "Sent 'GET' request to URL : $url; Response Code : $responseCode")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }.start()
+        }
     }
 
     private fun initElements() {
@@ -149,6 +178,8 @@ class MainActivity : AppCompatActivity() {
         rainbowModeButton = findViewById<Button>(R.id.rainbowModeButton)
         turnOffButton = findViewById<Button>(R.id.turnOffButton)
         manualModeButton = findViewById<Button>(R.id.manualModeButton)
+        IonOnButton = findViewById<Button>(R.id.ionOnButton)
+        IonOffButton = findViewById<Button>(R.id.ionOffButton)
     }
 
 
