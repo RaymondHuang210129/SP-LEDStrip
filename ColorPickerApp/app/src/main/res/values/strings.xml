@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LEDColorPicker</string>
+    <string name="ip_address">Your IP Address</string>
+    <string name="port">Port</string>
+</resources>
